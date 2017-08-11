@@ -1,9 +1,8 @@
 #!/bin/sh
 
-BUILD_PACKAGES="wget tar unzip lib32stdc++6 lib32z1"
-RUNTIME_PACKAGE=""
-apt-get --quiet update --yes
-apt-get --quiet install --yes $BUILD_PACKAGES $RUNTIME_PACKAGE
+apk update && apk add --no-cache bash ca-certificates wget
+
+mkdir /opt
 
 wget -qO-  https://dl.google.com/android/android-sdk_r${ANDROID_SDK_TOOLS}-linux.tgz | tar xz -C /opt
 
@@ -19,3 +18,5 @@ rm -rf android-sdk.tgz
 mkdir "$ANDROID_HOME/licenses" || true
 echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
 echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+
+rm /var/cache/apk/*
