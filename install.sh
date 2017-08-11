@@ -1,7 +1,7 @@
 #!/bin/sh
 
-BUILD_PACKAGES="wget tar unzip lib32stdc++6 lib32z1"
-RUNTIME_PACKAGE=""
+BUILD_PACKAGES="wget tar unzip"
+RUNTIME_PACKAGE="lib32stdc++6 lib32z1"
 apt-get --quiet update --yes
 apt-get --quiet install --yes $BUILD_PACKAGES $RUNTIME_PACKAGE
 

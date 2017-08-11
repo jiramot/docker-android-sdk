@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk
+FROM openjdk:8-jdk-slim
 
 ARG ANDROID_TARGET_SDK="25"
 ARG ANDROID_BUILD_TOOLS="24.0.0"
@@ -8,8 +8,8 @@ ENV ANDROID_COMPILE_SDK ${ANDROID_COMPILE_SDK}
 ENV ANDROID_BUILD_TOOLS ${ANDROID_BUILD_TOOLS}
 ENV ANDROID_SDK_TOOLS ${ANDROID_SDK_TOOLS}
 
+ENV ANDROID_HOME /opt/android-sdk-linux
+ENV PATH $PATH:$ANDROID_HOME/platform-tools/
+
 ADD install.sh /install.sh
 RUN /install.sh
-
-ENV ANDROID_HOME /opt/android-sdk-linux
-ENV PATH $PATH:/opt/android-sdk-linux/platform-tools/
