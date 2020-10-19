@@ -22,7 +22,6 @@ ENV ADB_INSTALL_TIMEOUT 120
 ENV ANDROID_SDK_HOME ~/.android
 
 ENV PATH=${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${PATH}
-#ENV PATH=${ANDROID_HOME}/emulator:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${PATH}
 
 RUN mkdir ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
 
@@ -32,3 +31,12 @@ RUN sdkmanager --sdk_root=${ANDROID_HOME} \
   "tools" \
   "platform-tools" \
   "emulator"
+
+ENV GRADLE_VERSION 6.7
+ENV GRADLE_HOME /opt/gradle
+RUN wget --no-verbose -O /tmp/gradle.zip -t 5 "https://downloads.gradle-dn.com/distributions/gradle-${GRADLE_VERSION}-bin.zip" && \
+    unzip -q /tmp/gradle.zip -d /tmp && \
+    mv /tmp/gradle-${GRADLE_VERSION} ${GRADLE_HOME} && \
+    rm /tmp/gradle.zip
+
+ENV PATH=${GRADLE_HOME}/bin:${PATH}    
