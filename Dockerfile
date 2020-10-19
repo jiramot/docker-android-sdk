@@ -1,16 +1,16 @@
 FROM openjdk:8-jdk
 ENV DEBIAN_FRONTEND noninteractive
-ENV LANG C.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
-ARG ANDROID_TARGET_SDK="29"
-ARG ANDROID_BUILD_TOOLS="29.0.2"
+## ANDROID
 ARG CMDLINE_TOOLS=https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
 
 RUN mkdir -p /opt/android/sdk
 ENV ANDROID_HOME /opt/android/sdk
 
 RUN apt-get --quiet update --yes && \
-    apt-get --quiet install --yes lib32stdc++6 lib32z1 unzip wget && \
+    apt-get --quiet install --yes lib32stdc++6 lib32z1 unzip wget make && \
     rm -rf /var/lib/apt/lists/*
 
 RUN wget -O /tmp/cmdline-tools.zip -t 5 "${CMDLINE_TOOLS}" && \
@@ -32,6 +32,7 @@ RUN sdkmanager --sdk_root=${ANDROID_HOME} \
   "platform-tools" \
   "emulator"
 
+## GRADLE
 ENV GRADLE_VERSION 6.7
 ENV GRADLE_HOME /opt/gradle
 RUN wget --no-verbose -O /tmp/gradle.zip -t 5 "https://downloads.gradle-dn.com/distributions/gradle-${GRADLE_VERSION}-bin.zip" && \
@@ -39,4 +40,19 @@ RUN wget --no-verbose -O /tmp/gradle.zip -t 5 "https://downloads.gradle-dn.com/d
     mv /tmp/gradle-${GRADLE_VERSION} ${GRADLE_HOME} && \
     rm /tmp/gradle.zip
 
-ENV PATH=${GRADLE_HOME}/bin:${PATH}    
+ENV PATH=${GRADLE_HOME}/bin:${PATH}
+
+## RUBY
+RUN apt-get update && \
+    cd /tmp && wget -O ruby-install-0.6.1.tar.gz https://github.com/postmodern/ruby-install/archive/v0.6.1.tar.gz && \
+    tar -xzvf ruby-install-0.6.1.tar.gz && \
+    cd ruby-install-0.6.1 && \
+    make install && \
+    ruby-install --cleanup ruby 2.6.1 && \
+    rm -r /tmp/ruby-install-* && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV PATH=/opt/rubies/ruby-2.6.1/bin:${PATH}    
+
+## Fastlane
+RUN gem install fastlane -NV
