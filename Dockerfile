@@ -1,30 +1,34 @@
-FROM openjdk:8-jdk-slim
+FROM openjdk:8-jdk
+ENV DEBIAN_FRONTEND noninteractive
+ENV LANG C.UTF-8
 
-ARG ANDROID_TARGET_SDK="25"
-ARG ANDROID_BUILD_TOOLS="24.0.0"
-ARG ANDROID_SDK_TOOLS="24.4.1"
+ARG ANDROID_TARGET_SDK="29"
+ARG ANDROID_BUILD_TOOLS="29.0.2"
+ARG CMDLINE_TOOLS=https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
 
-ENV ANDROID_COMPILE_SDK ${ANDROID_COMPILE_SDK}
-ENV ANDROID_BUILD_TOOLS ${ANDROID_BUILD_TOOLS}
-ENV ANDROID_SDK_TOOLS ${ANDROID_SDK_TOOLS}
-
-ENV ANDROID_HOME /opt/android-sdk-linux
-ENV PATH $PATH:$ANDROID_HOME/platform-tools/
+RUN mkdir -p /opt/android/sdk
+ENV ANDROID_HOME /opt/android/sdk
 
 RUN apt-get --quiet update --yes && \
-    apt-get --quiet install --yes lib32stdc++6 lib32z1
+    apt-get --quiet install --yes lib32stdc++6 lib32z1 unzip wget && \
+    rm -rf /var/lib/apt/lists/*
 
-# RUN wget -qO-  https://dl.google.com/android/android-sdk_r${ANDROID_SDK_TOOLS}-linux.tgz | tar xz -C /opt && \
-      # rm -rf android-sdk.tgz
-ADD https://dl.google.com/android/android-sdk_r${ANDROID_SDK_TOOLS}-linux.tgz /opt
+RUN wget -O /tmp/cmdline-tools.zip -t 5 "${CMDLINE_TOOLS}" && \
+    unzip -q /tmp/cmdline-tools.zip -d ${ANDROID_HOME} && \
+    rm /tmp/cmdline-tools.zip
 
-RUN echo y | /opt/android-sdk-linux/tools/android --silent update sdk --no-ui --all --filter android-${ANDROID_TARGET_SDK}
-RUN echo y | /opt/android-sdk-linux/tools/android --silent update sdk --no-ui --all --filter platform-tools
-RUN echo y | /opt/android-sdk-linux/tools/android --silent update sdk --no-ui --all --filter build-tools-${ANDROID_BUILD_TOOLS}
-RUN echo y | /opt/android-sdk-linux/tools/android --silent update sdk --no-ui --all --filter extra-android-m2repository
-RUN echo y | /opt/android-sdk-linux/tools/android --silent update sdk --no-ui --all --filter extra-google-google_play_services
-RUN echo y | /opt/android-sdk-linux/tools/android --silent update sdk --no-ui --all --filter extra-google-m2repository
+ENV ANDROID_SDK_ROOT $ANDROID_HOME/
+ENV ADB_INSTALL_TIMEOUT 120
+ENV ANDROID_SDK_HOME ~/.android
 
-RUN mkdir "$ANDROID_HOME/licenses" || true && \
-echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license" && \
-echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
+ENV PATH=${ANDROID_HOME}/emulator:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${PATH}
+#ENV PATH=${ANDROID_HOME}/emulator:${ANDROID_HOME}/cmdline-tools/tools/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools:${PATH}
+
+RUN mkdir ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
+
+RUN yes | sdkmanager --sdk_root=${ANDROID_HOME} --licenses && yes | sdkmanager --sdk_root=${ANDROID_HOME} --update
+
+RUN sdkmanager --sdk_root=${ANDROID_HOME} \
+  "tools" \
+  "platform-tools" \
+  "emulator"
